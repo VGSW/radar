@@ -1,0 +1,2 @@
+loglevel: debug
+filename: data/syslog
