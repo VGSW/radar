@@ -1,0 +1,7 @@
+make
+    build ....... build an image
+    run ......... run the supplied syslog file from data/
+    test ........ run tests in a one-off container
+    inspect ..... get a shell in a one-off container
+    clean ....... clean up
+    distclean ... clean up image/container
