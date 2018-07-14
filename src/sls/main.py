@@ -37,7 +37,6 @@ class SyslogStats():
         self.logger.addHandler (handler)
         self.logger.setLevel (loglevel)
 
-        self.chunksize = 1
         self.process_count = cfg.get ('process_count') or 1
 
 
@@ -85,8 +84,9 @@ class SyslogStats():
             results = p.map (
                 self.disect_line,
                 self.lines(),
-                self.chunksize,
             )
+
+        lap_time = time.time()
 
         stats = dict()
 
@@ -99,9 +99,11 @@ class SyslogStats():
 
         self.log_stats (stats = stats)
 
-        self.logger.info ('processed {lines} lines in {secs} using {procs} process{plural}'.format (
+        self.logger.info ('processed {lines} lines in {secs} (disection: {secs_disection}, bookkeeping: {secs_bookkeeping}) using {procs} process{plural}'.format (
             lines = stats['summary']['lines_processed'],
             secs = time.time() - start_time,
+            secs_disection = lap_time - start_time,
+            secs_bookkeeping = time.time() - lap_time,
             procs = self.process_count,
             plural = self.process_count > 1 and 'es' or '',
         ))
