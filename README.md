@@ -16,7 +16,7 @@ One-off Containers will mount `./data/` into the container.
 
 SyslogStats will (as a default) read `data/syslog` and distribute disection of lines to a configureable number of processes using multiprocessing.Pool.
 
-SyslogStat can be configured by setting options in the config (key name is the same as the long option name) file `sls.yml` or with command line options. The configurable options are
+SyslogStat can be configured by setting options in the config file `sls.yml` (key name is the same as the long option name)  or with command line options. The configurable options are
 
     -p --processes ... number of processes to ru
     -l --loglevel .... loglevel
