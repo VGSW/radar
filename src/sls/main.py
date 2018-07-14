@@ -61,25 +61,26 @@ class SyslogStats():
                 self.chunksize,
             )
 
-            for result in results:
-                # result = self.disect_line (line)
+        for result in results:
+            # result = self.disect_line (line)
 
-                stats['msg_lengths'].append (len (result['message']))
-                stats['lines_processed'] += 1
+            stats['msg_lengths'].append (len (result['message']))
+            stats['lines_processed'] += 1
 
-                if result['severity'] == 'Emergency':
-                    stats['count_emergency'] += 1
-                elif result['severity'] == 'Alert':
-                    stats['count_alert'] += 1
+            # print ('severity: %s' % result['severity'])
+            if result['severity'] == 'Emergency':
+                stats['count_emergency'] += 1
+            elif result['severity'] == 'Alert':
+                stats['count_alert'] += 1
 
-                if result['timestamp'] < stats['oldest']:
-                     stats['oldest'] = result['timestamp']
-                elif result['timestamp'] > stats['youngest']:
-                     stats['youngest'] = result['timestamp']
+            if result['timestamp'] < stats['oldest']:
+                 stats['oldest'] = result['timestamp']
+            elif result['timestamp'] > stats['youngest']:
+                 stats['youngest'] = result['timestamp']
 
-            stats['msg_length_avg'] = sum (stats['msg_lengths']) / len (stats['msg_lengths'])
+        stats['msg_length_avg'] = sum (stats['msg_lengths']) / len (stats['msg_lengths'])
 
-            self.log_stats (stats = stats)
+        self.log_stats (stats = stats)
 
         self.logger.info ('processed {lines} lines in {secs} using {procs} process{plural}'.format (
             lines = stats['lines_processed'],
