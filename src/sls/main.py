@@ -41,9 +41,7 @@ class SyslogStats():
         self.process_count = cfg.get ('process_count') or 1
 
 
-    def run (self):
-        start_time = time.time()
-
+    def bookkeeping (self, results):
         stats = dict (
             msg_length_avg  = -1,
             msg_lengths     = [],
@@ -54,16 +52,7 @@ class SyslogStats():
             lines_processed = 0,
         )
 
-        with multiprocessing.Pool (self.process_count) as p:
-            results = p.map (
-                self.disect_line,
-                self.lines(),
-                self.chunksize,
-            )
-
         for result in results:
-            # result = self.disect_line (line)
-
             stats['msg_lengths'].append (len (result['message']))
             stats['lines_processed'] += 1
 
@@ -80,6 +69,20 @@ class SyslogStats():
 
         stats['msg_length_avg'] = sum (stats['msg_lengths']) / len (stats['msg_lengths'])
 
+        return stats
+
+
+    def run (self):
+        start_time = time.time()
+
+        with multiprocessing.Pool (self.process_count) as p:
+            results = p.map (
+                self.disect_line,
+                self.lines(),
+                self.chunksize,
+            )
+
+        stats = self.bookkeeping (results)
         self.log_stats (stats = stats)
 
         self.logger.info ('processed {lines} lines in {secs} using {procs} process{plural}'.format (
