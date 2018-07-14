@@ -2,5 +2,6 @@
 [ ] check dates and arithmetic
 [ ] check config and log files locations
 [ ] test config file / commandline options
-
-[ ] maybe use map_async to prevent of collection all results in memory
+[\] maybe use map_async to prevent of collection all results in memory
+    so far, a very good way to make performance degrade miserably
+[ ] make installable
