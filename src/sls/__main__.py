@@ -25,7 +25,7 @@ def get_config ():
         '-p', '--processes',
         type   = int,
         action = 'store',
-        dest   = 'process_count',
+        dest   = 'processes',
         help   = 'number of processes to execute',
     )
     parser.add_argument (
@@ -47,7 +47,7 @@ def get_config ():
 
     # commandline will take precedence over config file
     #
-    args.process_count and cfg.update (process_count = args.process_count)
+    args.processes and cfg.update (processes = args.processes)
     args.loglevel      and cfg.update (loglevel = args.loglevel)
     args.filename      and cfg.update (filename = args.filename)
 
