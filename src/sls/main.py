@@ -37,7 +37,7 @@ class SyslogStats():
         self.logger.addHandler (handler)
         self.logger.setLevel (loglevel)
 
-        self.process_count = cfg.get ('process_count') or 1
+        self.processes = cfg.get ('processes') or os.cpu_count()
 
 
     def bookkeeping (self, results):
@@ -80,7 +80,7 @@ class SyslogStats():
 
         start_time = time.time()
 
-        with multiprocessing.Pool (self.process_count) as p:
+        with multiprocessing.Pool (self.processes) as p:
             results = p.map (
                 self.disect_line,
                 self.lines(),
@@ -104,8 +104,8 @@ class SyslogStats():
             secs = time.time() - start_time,
             secs_disection = lap_time - start_time,
             secs_bookkeeping = time.time() - lap_time,
-            procs = self.process_count,
-            plural = self.process_count > 1 and 'es' or '',
+            procs = self.processes,
+            plural = self.processes > 1 and 'es' or '',
         ))
 
         return stats
