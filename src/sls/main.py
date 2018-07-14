@@ -56,7 +56,6 @@ class SyslogStats():
             stats['msg_lengths'].append (len (result['message']))
             stats['lines_processed'] += 1
 
-            # print ('severity: %s' % result['severity'])
             if result['severity'] == 'Emergency':
                 stats['count_emergency'] += 1
             elif result['severity'] == 'Alert':
@@ -83,6 +82,7 @@ class SyslogStats():
             )
 
         stats = self.bookkeeping (results)
+
         self.log_stats (stats = stats)
 
         self.logger.info ('processed {lines} lines in {secs} using {procs} process{plural}'.format (
