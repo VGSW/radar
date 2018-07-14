@@ -1,0 +1,4 @@
+[ ] make internal stats a type
+[ ] check dates and arithmetic
+[ ] check config and log files locations
+[ ] test config file / commandline options

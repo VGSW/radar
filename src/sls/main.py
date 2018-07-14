@@ -5,12 +5,14 @@ import time
 import functools
 import calendar
 
+import multiprocessing
+
 
 class SyslogStats():
     """ read a syslog file and create some funky statistics
         format is assumed to be according to RFC 3164
 
-        TODO: check dates and arithmetic
+        assume all log messages from one year; SyslogStats will assume it to be 1900
     """
 
     def __init__ (self, **kwa):
@@ -28,41 +30,63 @@ class SyslogStats():
             logging.INFO,
         )
 
+        # XXX assuming log/ directory
         handler = logging.FileHandler ('%s/../log/sls.log' % os.path.dirname (os.path.realpath (__file__)))
         handler.setFormatter (logging.Formatter (fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-        self.logger = logging.getLogger ('sls')
+        self.logger = multiprocessing.get_logger()
         self.logger.addHandler (handler)
         self.logger.setLevel (loglevel)
 
+        self.chunksize = 1
+        self.process_count = cfg.get ('process_count') or 1
+
 
     def run (self):
+        start_time = time.time()
+
         stats = dict (
             msg_length_avg  = -1,
             msg_lengths     = [],
-            count_emergency   = -1,
-            count_alert       = -1,
+            count_emergency = -1,
+            count_alert     = -1,
             oldest          = calendar.timegm (time.strptime("31 Dec 1900", "%d %b %Y")),
             youngest        = calendar.timegm (time.strptime("1 Jan 1900", "%d %b %Y")),
+            lines_processed = 0,
         )
 
-        for line in self.lines():
-            result = self.disect_line (line)
+        with multiprocessing.Pool (self.process_count) as p:
+            results = p.map (
+                self.disect_line,
+                self.lines(),
+                self.chunksize,
+            )
 
-            stats['msg_lengths'].append (len (result['message']))
+            for result in results:
+                # result = self.disect_line (line)
 
-            if result['severity'] == 'Emergency':
-                stats['count_emergency'] += 1
-            elif result['severity'] == 'Alert':
-                stats['count_alert'] += 1
+                stats['msg_lengths'].append (len (result['message']))
+                stats['lines_processed'] += 1
 
-            if result['timestamp'] < stats['oldest']:
-                 stats['oldest'] = result['timestamp']
-            elif result['timestamp'] > stats['youngest']:
-                 stats['youngest'] = result['timestamp']
+                if result['severity'] == 'Emergency':
+                    stats['count_emergency'] += 1
+                elif result['severity'] == 'Alert':
+                    stats['count_alert'] += 1
 
-        stats['msg_length_avg'] = sum (stats['msg_lengths']) / len (stats['msg_lengths'])
+                if result['timestamp'] < stats['oldest']:
+                     stats['oldest'] = result['timestamp']
+                elif result['timestamp'] > stats['youngest']:
+                     stats['youngest'] = result['timestamp']
 
-        self.log_stats (stats = stats)
+            stats['msg_length_avg'] = sum (stats['msg_lengths']) / len (stats['msg_lengths'])
+
+            self.log_stats (stats = stats)
+
+        self.logger.info ('processed {lines} lines in {secs} using {procs} process{plural}'.format (
+            lines = stats['lines_processed'],
+            secs = time.time() - start_time,
+            procs = self.process_count,
+            plural = self.process_count > 1 and 'es' or '',
+        ))
 
         return stats
 
@@ -83,7 +107,8 @@ class SyslogStats():
                 yield line.strip()
 
 
-    def severity (self, **kwa):
+    @classmethod
+    def severity (_, **kwa):
         return list (filter (lambda s: (kwa.get ('priority') - s) % 8 == 0, range (0,8))).pop()
 
         # or shortcircuit it
@@ -100,7 +125,8 @@ class SyslogStats():
         # )
 
 
-    def disect_line (self, line):
+    @classmethod
+    def disect_line (cls, line):
         """ take one syslog line and return a dict with its parts
         """
 
@@ -121,11 +147,9 @@ class SyslogStats():
         m = compiled.match (line)
 
         # priority = facility * 8 + severity
-
+        #
         priority = int (m.group ('priority'))
-
-        severity = self.severity(priority = priority)
-
+        severity = cls.severity (priority = priority)
         facility = int ((priority - severity) / 8)
 
         return dict (
