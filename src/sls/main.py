@@ -60,10 +60,7 @@ class SyslogStats():
             elif result['timestamp'] > stats['youngest']:
                  stats['youngest'] = result['timestamp']
 
-        stats['msg_length_avg'] = (
-            functools.reduce (lambda a, b: a + b, stats['msg_lengths']) /
-            len (stats['msg_lengths'])
-        )
+        stats['msg_length_avg'] = sum (stats['msg_lengths']) / len (stats['msg_lengths'])
 
         self.log_stats (stats = stats)
 
@@ -84,6 +81,23 @@ class SyslogStats():
         with open (self.filename, 'r') as fh:
             for line in fh:
                 yield line.strip()
+
+
+    def severity (self, **kwa):
+        return list (filter (lambda s: (kwa.get ('priority') - s) % 8 == 0, range (0,8))).pop()
+
+        # or shortcircuit it
+        #
+        # return (
+        #     (((priority    ) % 8 == 0) and 0) or
+        #     (((priority - 1) % 8 == 0) and 1) or
+        #     (((priority - 2) % 8 == 0) and 2) or
+        #     (((priority - 3) % 8 == 0) and 3) or
+        #     (((priority - 4) % 8 == 0) and 4) or
+        #     (((priority - 5) % 8 == 0) and 5) or
+        #     (((priority - 6) % 8 == 0) and 6) or
+        #     (((priority - 7) % 8 == 0) and 7)
+        # )
 
 
     def disect_line (self, line):
@@ -110,16 +124,7 @@ class SyslogStats():
 
         priority = int (m.group ('priority'))
 
-        severity = (
-            (((priority    ) % 8 == 0) and 0) or
-            (((priority - 1) % 8 == 0) and 1) or
-            (((priority - 2) % 8 == 0) and 2) or
-            (((priority - 3) % 8 == 0) and 3) or
-            (((priority - 4) % 8 == 0) and 4) or
-            (((priority - 5) % 8 == 0) and 5) or
-            (((priority - 6) % 8 == 0) and 6) or
-            (((priority - 7) % 8 == 0) and 7)
-        )
+        severity = self.severity(priority = priority)
 
         facility = int ((priority - severity) / 8)
 
