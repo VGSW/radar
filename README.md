@@ -1,5 +1,15 @@
-SyslogStats - analyze RFC 3164 compliant syslog files
-=====================================================
+SyslogStats
+===========
+
+## What ?
+
+SyslogStats will analyse syslog RFC 3164 compliant syslog files and log the following data per-host and globally:
+
+    average message length
+    number of emergency severities
+    number of alert severities
+    oldest entry
+    youngest entry
 
 ## building
 

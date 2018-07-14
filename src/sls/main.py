@@ -4,7 +4,7 @@ import re
 import time
 import functools
 import calendar
-
+import itertools
 import multiprocessing
 
 
@@ -42,6 +42,9 @@ class SyslogStats():
 
 
     def bookkeeping (self, results):
+        """ take a list of results, anslyse them and return a stats-ds
+        """
+
         stats = dict (
             msg_length_avg  = -1,
             msg_lengths     = [],
@@ -72,6 +75,10 @@ class SyslogStats():
 
 
     def run (self):
+        """ execute an instance of SLS
+            returns analysis per-host and global ('summary')
+        """
+
         start_time = time.time()
 
         with multiprocessing.Pool (self.process_count) as p:
@@ -81,12 +88,19 @@ class SyslogStats():
                 self.chunksize,
             )
 
-        stats = self.bookkeeping (results)
+        stats = dict()
+
+        for hostname, group in itertools.groupby (results, lambda r: r.get ('hostname')):
+            stats[hostname] = self.bookkeeping ([g for g in group])
+
+        # prevent round-off errors
+        # this runs only once
+        stats['summary'] = self.bookkeeping (results)
 
         self.log_stats (stats = stats)
 
         self.logger.info ('processed {lines} lines in {secs} using {procs} process{plural}'.format (
-            lines = stats['lines_processed'],
+            lines = stats['summary']['lines_processed'],
             secs = time.time() - start_time,
             procs = self.process_count,
             plural = self.process_count > 1 and 'es' or '',
@@ -96,13 +110,12 @@ class SyslogStats():
 
 
     def log_stats (self, **kwa):
-        stats = kwa.get ('stats')
-
-        self.logger.debug ('average message length: {}'.format (stats['msg_length_avg']))
-        self.logger.debug ('count emergency severities: {}'.format (stats['count_emergency']))
-        self.logger.debug ('count alert severities: {}'.format (stats['count_alert']))
-        self.logger.debug ('oldest: {}'.format (time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime (stats['oldest']))))
-        self.logger.debug ('youngest: {}'.format (time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime (stats['youngest']))))
+        for host, data in kwa.get ('stats').items():
+            self.logger.info ('[{}] average message length: {}'.format (host, data['msg_length_avg']))
+            self.logger.info ('[{}] count emergency severities: {}'.format (host, data['count_emergency']))
+            self.logger.info ('[{}] count alert severities: {}'.format (host, data['count_alert']))
+            self.logger.info ('[{}] oldest: {}'.format (host, time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime (data['oldest']))))
+            self.logger.info ('[{}] youngest: {}'.format (host, time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime (data['youngest']))))
 
 
     def lines (self, **kwa):
