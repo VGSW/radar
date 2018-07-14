@@ -47,8 +47,8 @@ class SyslogStats():
         stats = dict (
             msg_length_avg  = -1,
             msg_lengths     = [],
-            count_emergency = -1,
-            count_alert     = -1,
+            count_emergency = 0,
+            count_alert     = 0,
             oldest          = calendar.timegm (time.strptime("31 Dec 1900", "%d %b %Y")),
             youngest        = calendar.timegm (time.strptime("1 Jan 1900", "%d %b %Y")),
             lines_processed = 0,
