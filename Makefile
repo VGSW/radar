@@ -11,10 +11,10 @@ build:
 	${DOCKER} build --tag ${IMAGE} --file Dockerfile src/
 
 run:
-	${DOCKER} run --rm -it --volume ${BASE}/data:/root/data ${IMAGE}
+	${DOCKER} run --rm -it --publish 127.0.0.1:8787:8787 --volume ${BASE}/data:/root/data ${IMAGE}
 
 inspect:
-	${DOCKER} run --rm -it --volume ${BASE}/data:/root/data ${IMAGE} sh
+	${DOCKER} run --rm -it --publish 127.0.0.1:8787:8787 --volume ${BASE}/data:/root/data ${IMAGE} sh
 
 clean:
 	${FIND} . -name *pyc | xargs rm -f
