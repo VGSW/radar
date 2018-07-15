@@ -20,6 +20,7 @@ clean:
 	${FIND} . -name *pyc | xargs rm -f
 	${FIND} . -name __pycache__ | xargs rm -rf
 	${FIND} . -name .pytest_cache | xargs rm -fr
+	${FIND} . -name dask-worker-space | xargs rm -fr
 
 distclean: clean
 	${DOCKER} rm ${CONTAINER}
