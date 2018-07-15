@@ -90,7 +90,10 @@ class SyslogStats():
 
         stats = dict()
 
-        for hostname, group in itertools.groupby (results, lambda r: r.get ('hostname')):
+        for hostname, group in itertools.groupby (
+            sorted (results, key = lambda r: r.get ('hostname')),
+            lambda r: r.get ('hostname')
+        ):
             stats[hostname] = self.bookkeeping ([g for g in group])
 
         # prevent round-off errors
