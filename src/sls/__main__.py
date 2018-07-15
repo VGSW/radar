@@ -42,6 +42,13 @@ def get_config ():
         dest   = 'loglevel',
         help   = 'Loglevel',
     )
+    parser.add_argument (
+        '-s', '--strategy',
+        type   = str,
+        action = 'store',
+        dest   = 'strategy',
+        help   = 'strategy to use, one of (dask|pool)',
+    )
 
     args = parser.parse_args()
 
@@ -50,6 +57,7 @@ def get_config ():
     args.processes and cfg.update (processes = args.processes)
     args.loglevel      and cfg.update (loglevel = args.loglevel)
     args.filename      and cfg.update (filename = args.filename)
+    args.strategy      and cfg.update (strategy = args.strategy)
 
     return cfg
 

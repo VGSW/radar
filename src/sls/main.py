@@ -6,6 +6,7 @@ import functools
 import calendar
 import itertools
 import multiprocessing
+from dask.distributed import Client, LocalCluster, as_completed
 
 
 class SyslogStats():
@@ -19,6 +20,7 @@ class SyslogStats():
         cfg = kwa.get ('cfg')
 
         self.filename = cfg.get ('filename')
+        self.strategy = cfg.get ('strategy') or 'pool'
 
         loglevel = dict (
             debug = logging.DEBUG,
@@ -80,17 +82,35 @@ class SyslogStats():
 
         start_time = time.time()
 
-        with multiprocessing.Pool (self.processes) as p:
-            results = p.map (
-                self.disect_line,
-                self.lines(),
+        results = None
+
+        # really poor man's strategy
+        #
+        if (self.strategy == 'pool'):
+            self.logger.info ('using pool strategy')
+
+            with multiprocessing.Pool (self.processes) as p:
+                results = p.map (
+                    self.disect_line,
+                    self.lines(),
+                )
+
+        elif (self.strategy == 'dask'):
+            self.logger.info ('using dask strategy')
+
+            results = self.do_dask (
+                func = self.disect_line,
+                lines = self.lines(),
             )
 
         lap_time = time.time()
 
         stats = dict()
 
-        for hostname, group in itertools.groupby (results, lambda r: r.get ('hostname')):
+        for hostname, group in itertools.groupby (
+            sorted (results, key = lambda r: r.get ('hostname')),
+            lambda r: r.get ('hostname')
+        ):
             stats[hostname] = self.bookkeeping ([g for g in group])
 
         # prevent round-off errors
@@ -214,3 +234,43 @@ class SyslogStats():
             hostname = m.group ('hostname'),
             message = m.group ('message'),
         )
+
+
+    def setup_dask (self):
+        self.cluster = LocalCluster (
+            n_workers           = self.processes,
+            processes           = True,
+            threads_per_worker  = 1, #cfg.get ('threads'),
+
+            # make bokeh available outside of a docker container too
+            # see: https://github.com/dask/distributed/issues/1875
+            # well, that was a fun two hours (for moderate values of "fun" ;-)
+            ip                  = '',
+        )
+
+        self.client = Client (self.cluster)
+
+
+    def shutdown_dask (self):
+        self.cluster.close()
+
+
+    def do_dask (self, **kwa):
+        func  = kwa.get ('func')
+        lines = kwa.get ('lines')
+
+        self.setup_dask()
+
+        futures = []
+        for l in lines:
+            futures.append (self.client.submit (func, l, pure = False))
+
+        results = []
+        for xi, future in enumerate (as_completed (futures)):
+            results.append (future.result())
+
+        self.shutdown_dask()
+
+        assert len(futures) == len(results)
+
+        return results

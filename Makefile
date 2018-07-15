@@ -3,8 +3,8 @@ PYTEST=/usr/bin/pytest
 FIND=/usr/bin/find
 BASE=`pwd`
 
-IMAGE=sls
-CONTAINER=sls01
+IMAGE=sls_dask
+CONTAINER=sls_dask01
 
 build:
 	$(warning "make sure needed config files are available")

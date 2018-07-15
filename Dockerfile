@@ -7,7 +7,15 @@ RUN apk update \
     python3 \
     python3-dev \
     pytest \
-    py-yaml
+    py-yaml \
+    gcc \
+    # limits.h
+    musl-dev \
+    linux-headers
+
+RUN pip3 install \
+    dask[distributed] \
+    bokeh
 
 RUN mkdir /root/log/
 RUN mkdir /root/sls/
