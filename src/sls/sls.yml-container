@@ -1,0 +1,8 @@
+loglevel: info
+logfile: /var/log/sls.log
+
+# file to be read
+filename: data/syslog
+
+# number of processes to execute
+processes: 2

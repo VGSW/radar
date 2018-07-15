@@ -9,9 +9,11 @@ RUN apk update \
     pytest \
     py-yaml
 
-RUN mkdir /root/log/
-RUN mkdir /root/sls/
-COPY sls/ /root/sls/
+RUN mkdir -p /root/src/sls/
+COPY src/sls/sls.yml-container /etc/sls.yml
+COPY . /root/src/sls/
+
+RUN cd /root/src/sls && python3 setup.py install
 
 WORKDIR /root/
 CMD ["python3", "-m", "sls"]

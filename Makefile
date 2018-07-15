@@ -8,7 +8,7 @@ CONTAINER=sls01
 
 build:
 	$(warning "make sure needed config files are available")
-	${DOCKER} build --tag ${IMAGE} --file Dockerfile src/
+	${DOCKER} build --tag ${IMAGE} --file Dockerfile .
 
 run:
 	${DOCKER} run --rm -it --volume ${BASE}/data:/root/data ${IMAGE}
@@ -26,4 +26,4 @@ distclean: clean
 	${DOCKER} rmi ${IMAGE}
 
 test:
-	${DOCKER} run --rm -it --volume ${BASE}/data:/root/data ${IMAGE} ${PYTEST} sls/
+	${DOCKER} run --rm -it --volume ${BASE}/data:/root/data ${IMAGE} ${PYTEST} src/sls/
