@@ -13,7 +13,7 @@ SyslogStats will analyse RFC 3164 compliant syslog files and log the following d
 
 ## How ?
 
-SyslogStats will (as a default) read `data/syslog` and distribute disection of lines to a configureable number of processes using multiprocessing.Pool. After grouping the results by the message's hostname some interesting data is extracted from it.
+SyslogStats will (as a default) read `data/syslog` and distribute disection of lines to a configureable number of processes using multiprocessing.Pool or [Dask](https://dask.pydata.org/en/latest). After grouping the results by the message's hostname some interesting data is extracted from it.
 
 ## Building
 
@@ -33,6 +33,9 @@ SyslogStat can be configured by setting options in the config file `sls.yml` (ke
     -p --processes ... number of processes to ru
     -l --loglevel .... loglevel
     -f --filename .... syslog file to read
+    -s --strategy .... one of (pool|dask)
+                       select either multiprocessing.Pool or Dask to handle concurrency (defaults to pool)
+                       (Note: "strategy" is obviously not the full fledged pattern of the same name here) 
 
 ## Examples
 
