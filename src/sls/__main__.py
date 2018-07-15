@@ -9,18 +9,14 @@ def get_config ():
         command line options take precedence
     """
 
-    # assume configfile at ./sls.yml
-    # must start somewhere with configuration for keeping a certain amount of sanity
-    #
-    configfile = '%s/sls.yml' % os.path.dirname (os.path.realpath (__file__))
-
-    if not os.path.isfile (configfile):
-        raise LookupError ('missing config file <%s>' % configfile)
-
-    with open (configfile, 'r') as config:
-        cfg = yaml.load (config)
-
     parser = argparse.ArgumentParser()
+    parser.add_argument (
+        '-c', '--config',
+        type   = str,
+        action = 'store',
+        dest   = 'configfile',
+        help   = 'configfile location',
+    )
     parser.add_argument (
         '-p', '--processes',
         type   = int,
@@ -42,14 +38,34 @@ def get_config ():
         dest   = 'loglevel',
         help   = 'Loglevel',
     )
+    parser.add_argument (
+        '-L', '--logfile',
+        type   = str,
+        action = 'store',
+        dest   = 'logfile',
+        help   = 'logfile location',
+    )
 
     args = parser.parse_args()
+
+    configfile = ''
+
+    if args.configfile:
+        configfile = args.configfile
+    elif os.path.isfile ('/etc/sls.yml'):
+        configfile = '/etc/sls.yml'
+    else:
+        raise LookupError ('missing config file <%s>' % configfile)
+
+    with open (configfile, 'r') as config:
+        cfg = yaml.load (config)
 
     # commandline will take precedence over config file
     #
     args.processes and cfg.update (processes = args.processes)
-    args.loglevel      and cfg.update (loglevel = args.loglevel)
-    args.filename      and cfg.update (filename = args.filename)
+    args.loglevel  and cfg.update (loglevel = args.loglevel)
+    args.filename  and cfg.update (filename = args.filename)
+    args.logfile   and cfg.update (logfile = args.logfile)
 
     return cfg
 

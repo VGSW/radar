@@ -30,8 +30,9 @@ class SyslogStats():
             logging.INFO,
         )
 
-        # XXX assuming log/ directory
-        handler = logging.FileHandler ('%s/../log/sls.log' % os.path.dirname (os.path.realpath (__file__)))
+        logfile = cfg.get ('logfile') and cfg.get ('logfile') or 'log/sls.log'
+
+        handler = logging.FileHandler (logfile)
         handler.setFormatter (logging.Formatter (fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
         self.logger = multiprocessing.get_logger()
         self.logger.addHandler (handler)

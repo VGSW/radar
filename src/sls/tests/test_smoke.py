@@ -1,13 +1,25 @@
 # import pytest
 import time
+import os
+import yaml
 
 from sls.main import SyslogStats
 
+
+# relative to test_smoke.py
+if os.path.isfile ('%s/../sls.yml' % os.path.dirname (os.path.realpath (__file__))):
+    configfile = '%s/../sls.yml' % os.path.dirname (os.path.realpath (__file__))
+elif os.path.isfile ('/etc/sls.yml'):
+    configfile = '/etc/sls.yml'
+else:
+    raise LookupError ('missing config file <%s>' % configfile)
+
+with open (configfile, 'r') as config:
+    cfg = yaml.load (config)
+
+
 def test_smoke_01 ():
-    sls = SyslogStats(cfg = dict (
-        loglevel = 'debug',
-        filename = 'data/syslog',
-    ))
+    sls = SyslogStats (cfg = cfg)
 
     stats = sls.run().get ('summary')
 
@@ -26,10 +38,12 @@ def test_severity ():
     assert SyslogStats.severity (priority = 191) == 7
 
 def test_counters ():
-    sls = SyslogStats(cfg = dict (
+    cfg.update (dict (
         loglevel = 'debug',
         filename = 'data/syslog.counters',
     ))
+
+    sls = SyslogStats (cfg = cfg)
 
     stats = sls.run().get ('summary')
 
@@ -37,10 +51,12 @@ def test_counters ():
     assert stats.get ('count_alert') == 2
 
 def test_per_host ():
-    sls = SyslogStats(cfg = dict (
+    cfg.update (dict (
         loglevel = 'debug',
         filename = 'data/syslog.per_host',
     ))
+
+    sls = SyslogStats (cfg = cfg)
 
     stats = sls.run()
 
