@@ -30,6 +30,7 @@ test:
 
 # setup config file by symlinking for test and clean up afterwards
 local-test:
+	mkdir --parents log/
 	cd src/sls && ln -s sls.yml-local sls.yml && cd ../../
 	pytest
 	rm src/sls/sls.yml

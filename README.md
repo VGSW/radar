@@ -22,6 +22,7 @@ Use the very naive Makefile to build various targes
     build ....... build an image
     run ......... run the supplied syslog file from data/
     test ........ run tests in a one-off container
+    local-test .. run tests locally and ensure config file
     inspect ..... get a shell in a one-off container
     clean ....... clean up
     distclean ... clean up image/container
