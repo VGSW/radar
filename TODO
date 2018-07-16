@@ -1,7 +1,8 @@
 [ ] make internal stats a type
 [ ] check dates and arithmetic
-[ ] check config and log files locations
+[x] check config and log files locations
 [ ] test config file / commandline options
 [\] maybe use map_async to prevent of collection all results in memory
     so far, a very good way to make performance degrade miserably
-[ ] make installable
+[x] try dask; oddly also a very nice way to slow sls down
+[x] make installable
