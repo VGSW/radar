@@ -131,7 +131,12 @@ class SyslogStats():
 
     @classmethod
     def severity (_, **kwa):
-        return list (filter (lambda s: (kwa.get ('priority') - s) % 8 == 0, range (0,8))).pop()
+        priority = kwa.get ('priority')
+
+        return [
+            severity for severity in range (8)
+            if (priority - severity) % 8 == 0
+        ].pop()
 
         # or shortcircuit it
         #
