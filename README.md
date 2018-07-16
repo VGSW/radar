@@ -33,7 +33,9 @@ SyslogStat can be configured by setting options in the config file `sls.yml` (ke
 
     -p --processes ... number of processes to ru
     -l --loglevel .... loglevel
+    -L --logfile ..... logfile location (defaults to ./log/sls.log)
     -f --filename .... syslog file to read
+    -c --config ...... config location (defaults to /etc/sls.yml)
 
 ## Examples
 
@@ -45,4 +47,4 @@ Same manually inside a container
 
 `[user@host] $ make build inspect`
 
-`~ # python3 -m sls --processes 4 &  tail -f log/sls.log`
+`~ # python3 -m sls --processes 4 &  tail -f /var/log/sls.log`
