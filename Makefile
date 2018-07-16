@@ -27,3 +27,9 @@ distclean: clean
 
 test:
 	${DOCKER} run --rm -it --volume ${BASE}/data:/root/data ${IMAGE} ${PYTEST} src/sls/
+
+# setup config file by symlinking for test and clean up afterwards
+local-test:
+	cd src/sls && ln -s sls.yml-local sls.yml && cd ../../
+	pytest
+	rm src/sls/sls.yml
