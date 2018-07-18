@@ -71,6 +71,18 @@ class SyslogStats():
 
         stats['msg_length_avg'] = sum (stats['msg_lengths']) / len (stats['msg_lengths'])
 
+        # a number of nice and fancy list comprehensions,
+        # while more elegant would loop a lot
+        #
+        # stats.update (dict(
+        #     lines_processed = len (results),
+        #     count_alert     = sum ([1 for r in results if r.get('severity') == 'Alert']),
+        #     count_emergency = sum ([1 for r in results if r.get('severity') == 'Emergency']),
+        #     oldest          = min ([r.get ('timestamp') for r in results]),
+        #     youngest        = max ([r.get ('timestamp') for r in results]),
+        #     msg_length_avg  = sum ([len (r.get ('message')) for r in results]) / len (results),
+        # ))
+
         return stats
 
 
