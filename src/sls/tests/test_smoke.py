@@ -64,3 +64,12 @@ def test_per_host ():
     assert stats.get ('10.1.2.3').get ('msg_length_avg') == 48.0
     assert stats.get ('unicorn').get ('msg_length_avg') == 14.6
     assert stats.get ('FEDC:BA98:7654:3210:FEDC:BA98:7654:3210').get ('msg_length_avg') == 39.0
+
+def test_errors_01 ():
+    cfg.update (dict (filename = 'data/syslog.errors'))
+    sls = SyslogStats (cfg = cfg)
+
+    stats = sls.run().get ('summary')
+
+    assert stats.get ('msg_length_avg') == 33.0
+    assert stats.get ('count_emergency') == 1

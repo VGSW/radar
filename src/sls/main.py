@@ -94,10 +94,13 @@ class SyslogStats():
         start_time = time.time()
 
         with multiprocessing.Pool (self.processes) as p:
-            results = p.map (
-                self.disect_line,
-                self.lines(),
-            )
+            results = [
+                result for result in p.map (
+                    self.disect_line,
+                    self.lines(),
+                )
+                if len (result)
+            ]
 
         lap_time = time.time()
 
@@ -186,6 +189,9 @@ class SyslogStats():
         """, re.VERBOSE)
 
         m = compiled.match (line)
+
+        if not m:
+            return dict()
 
         # priority = facility * 8 + severity
         #
