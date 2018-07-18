@@ -102,6 +102,10 @@ class SyslogStats():
                 if len (result)
             ]
 
+            # leaving the context manager will apply terminate()
+            p.close()
+            p.join()
+
         lap_time = time.time()
 
         stats = dict()
