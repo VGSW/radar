@@ -1,3 +1,10 @@
+"""
+SyslogStats
+
+Offers simple analysis of syslog files
+"""
+
+
 import os
 import logging
 import re
@@ -11,11 +18,19 @@ import multiprocessing
 class SyslogStats():
     """ read a syslog file and create some funky statistics
         format is assumed to be according to RFC 3164
+        final analysis is logged per host and per file in the logfile
 
         assume all log messages from one year; SyslogStats will assume it to be 1900
     """
 
     def __init__ (self, **kwa):
+        """
+        kwa.cfg.loglevel .... loglevel to use
+        kwa.cfg.logfile ..... logfile
+        kwa.cfg.processes ... number of processes in process pool
+        kwa.cfg.filename .... syslogfile to analyse
+        """
+
         cfg = kwa.get ('cfg')
 
         self.filename = cfg.get ('filename')
@@ -41,9 +56,11 @@ class SyslogStats():
         self.processes = cfg.get ('processes') or os.cpu_count()
 
 
-    def bookkeeping (self, results):
+    def bookkeeping (self, **kwa):
         """ take a list of results, anslyse them and return a stats-ds
         """
+
+        results = kwa.get ('results')
 
         stats = dict (
             msg_length_avg  = -1,
@@ -97,7 +114,7 @@ class SyslogStats():
             results = [
                 result for result in p.map (
                     self.disect_line,
-                    self.lines(),
+                    self.lines (filename = self.filename),
                 )
                 if len (result)
             ]
@@ -114,11 +131,11 @@ class SyslogStats():
             sorted (results, key = lambda r: r.get ('hostname')),
             lambda r: r.get ('hostname')
         ):
-            stats[hostname] = self.bookkeeping ([g for g in group])
+            stats[hostname] = self.bookkeeping (results = [g for g in group])
 
         # prevent round-off errors
         # this runs only once
-        stats['summary'] = self.bookkeeping (results)
+        stats['summary'] = self.bookkeeping (results = results)
 
         self.log_stats (stats = stats)
 
@@ -144,7 +161,13 @@ class SyslogStats():
 
 
     def lines (self, **kwa):
-        with open (self.filename, 'r') as fh:
+        """ yield lines from file
+
+            kwa.filename
+        """
+        filename = kwa.get ('filename')
+
+        with open (filename, 'r') as fh:
             # omit empty lines
             for line in [l for l in [joe.strip() for joe in fh] if l]:
                 yield line
@@ -152,6 +175,10 @@ class SyslogStats():
 
     @classmethod
     def severity (_, **kwa):
+        """ get severity from given priority
+
+            kwa.priority
+        """
         priority = kwa.get ('priority')
 
         return [
@@ -176,6 +203,16 @@ class SyslogStats():
     @classmethod
     def disect_line (cls, line):
         """ take one syslog line and return a dict with its parts
+
+            line ... line to disect
+
+            parts of the line are set in the returned dictionary at the keys of the same name
+                priority
+                severity
+                facility
+                timestamp
+                hostname
+                message
         """
 
         compiled = re.compile (r"""

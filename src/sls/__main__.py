@@ -7,6 +7,9 @@ from sls.main import SyslogStats
 def get_config ():
     """ load configuration from configfile
         command line options take precedence
+
+        if no configfile is given on the command line one is assumed at /etc/sls.yml
+        a configfile is mandatory
     """
 
     parser = argparse.ArgumentParser()
