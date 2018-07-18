@@ -126,8 +126,9 @@ class SyslogStats():
 
     def lines (self, **kwa):
         with open (self.filename, 'r') as fh:
-            for line in fh:
-                yield line.strip()
+            # omit empty lines
+            for line in [l for l in [joe.strip() for joe in fh] if l]:
+                yield line
 
 
     @classmethod
